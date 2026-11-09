@@ -96,3 +96,51 @@ Tested the minimum customer age rule with three explicit ages:
 The age is provided explicitly through InlineAutoData, while the remaining test dependencies and objects are generated automatically.
 
 This keeps boundary-value scenarios readable without manually constructing every test object.
+
+## R6 — AutoFixture vs Bogus
+
+Both libraries help create test data, but they solve different problems.
+
+### AutoFixture
+
+AutoFixture focuses on creating anonymous objects and reducing Arrange boilerplate.
+
+In `BookingServiceAutoFixtureTests`, AutoFixture creates:
+- BookingService and its dependencies.
+- Customer, Vehicle, and BookingRequest objects.
+- Moq objects for interfaces through AutoMoqCustomization.
+
+`[Frozen]` ensures that the configured mock instance is shared with the automatically created BookingService.
+
+A custom `ValidCustomerCustomization` ensures generated customers satisfy the minimum age, license, and blacklist requirements.
+
+### Bogus
+
+Bogus focuses on generating realistic and controlled fake data.
+
+In `CustomerFaker` and `VehicleFaker`, Bogus generates realistic values such as:
+- Customer names, emails, and phone numbers.
+- Vehicle models and plate numbers.
+- Random mileage and daily rates.
+
+Fixed seeds and a fixed reference date make generated data reproducible.
+
+The fluent methods `WithAge`, `WithTier`, `WithCategory`, and `WithDailyRate` allow tests to control specific business properties.
+
+### Comparison
+
+| Aspect | AutoFixture | Bogus |
+|---|---|---|
+| Main purpose | Automatic object creation | Realistic fake data generation |
+| Dependencies | Can create mocks using AutoMoq | Does not create dependency mocks |
+| Data control | Customizations and Frozen parameters | Faker rules and fluent methods |
+| Best use | Reducing test setup boilerplate | Generating realistic domain data |
+| Example | BookingServiceAutoFixtureTests | CustomerFakerTests and VehicleFakerTests |
+
+### Conclusion
+
+AutoFixture is useful when a test needs many objects and dependencies with minimal manual setup.
+
+Bogus is useful when tests need realistic, repeatable, and customizable domain data.
+
+They complement each other and can be used together when a test needs both automatic dependency creation and realistic test data.
