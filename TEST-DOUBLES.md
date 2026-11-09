@@ -23,3 +23,29 @@ Additional supporting doubles are used to construct BookingService in isolation:
 - `FixedTimeProvider`
 
 These support the test setup but are not counted among the five required hand-written double types.
+
+## Moq vs Hand-written Test Doubles
+
+Three BookingService tests were implemented using Moq:
+
+- `Should_ReturnCustomer_When_CustomerExists`
+- `Should_SendConfirmationSms_When_BookingIsCreated`
+- `Should_NotChargeDeposit_When_CustomerIsPlatinum`
+
+### Comparison
+
+| Aspect | Hand-written Doubles | Moq |
+|---|---|---|
+| Setup | Requires writing a dedicated class and implementing its methods. | Uses `Setup()` and `Returns()` directly in the test. |
+| Verification | Requires manually recording calls and inspecting stored values. | Uses `Verify()` and `Times.Once` or `Times.Never`. |
+| Readability | Can be easier to understand when the fake behavior is substantial. | More concise for simple interactions and call verification. |
+| Brittleness | Custom behavior is explicit, but changes to interfaces require updating the handwritten classes. | Tests can become coupled to exact method calls and arguments. |
+| Reusability | Reusable classes can serve many tests. | Mock configurations are usually written close to each test. |
+
+### Conclusion
+
+Hand-written doubles are useful when a test needs meaningful in-memory behavior, such as `FakeBookingRepository`.
+
+Moq is useful when a test mainly needs to configure a dependency or verify interactions, such as payment and SMS calls.
+
+Both approaches are valuable. The choice depends on the behavior being tested.
