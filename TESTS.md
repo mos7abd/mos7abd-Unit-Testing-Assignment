@@ -124,3 +124,69 @@ The tests cover:
 The tests also helped identify and correct a boundary-condition bug in `CalculateRentalDays`.
 
 **Note:** AI assistance was used during test drafting and review. The review was limited to business rules and test names, not the production implementation.
+
+
+---
+
+# Bogus – Test Data Generation
+
+## 1. Faker Classes
+
+Bogus is used to generate realistic fake test data for domain entities.
+
+The test project contains:
+
+- `CustomerFaker`: Generates customers with realistic names, emails, phone numbers, and configurable age and loyalty tier.
+- `VehicleFaker`: Generates vehicles with realistic models, plate numbers, and configurable category and daily rate.
+
+Both fakers use fixed seeds to ensure repeatable test data.
+
+## 2. Why Fixed Seeds Matter
+
+Fixed seeds make generated data deterministic and reproducible.
+
+This supports the Repeatable principle of FIRST because the same test inputs are generated across repeated test runs.
+
+Without fixed seeds, random values may change between runs and cause unpredictable test failures, making bugs harder to reproduce.
+
+## 3. When Random Data Is Appropriate
+
+Random data is appropriate when the exact generated value does not affect the expected behavior.
+
+Example: Generating a customer with a random name and email when testing that the customer data contains valid, non-empty values.
+
+Different generated names and emails are acceptable because the test does not depend on their exact values.
+
+## 4. When Random Data Is Not Appropriate
+
+Random data should not be used for values that directly affect business rules or expected results.
+
+Example: Testing the young-driver surcharge in `PricingService`.
+
+The customer's age must be controlled because the surcharge applies only to customers aged 21–24.
+
+Using an uncontrolled random age could make the test outcome unpredictable.
+
+Instead, use explicit faker customization:
+
+```csharp
+var customer = new CustomerFaker()
+    .WithAge(23)
+    .WithTier(LoyaltyTier.Silver)
+    .Generate();
+```
+
+Similarly, vehicle category and daily rate should be explicitly controlled when they affect pricing calculations:
+
+```csharp
+var vehicle = new VehicleFaker()
+    .WithCategory(VehicleCategory.Luxury)
+    .WithDailyRate(2500m)
+    .Generate();
+```
+
+## 5. Conclusion
+
+Use fixed-seed fakers to create realistic and repeatable test data.
+
+Use explicit values or faker customizations for any property that affects the expected business behavior.
