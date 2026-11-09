@@ -198,7 +198,71 @@ public class PricingServiceTests
         // Assert
         result.AdditionalDriversCost.Should().Be(expected);
     }
+    // BR-30: Base amount
 
+    [Theory]
+    [InlineData(1000, 1, 1000)]
+    [InlineData(600, 3, 1800)]
+    [InlineData(1500, 7, 10500)]
+    public void Should_CalculateBaseAmount_When_DailyRateAndDurationChange(
+        decimal dailyRate,
+        int days,
+        decimal expected)
+    {
+        // Arrange
+        var customer = CreateCustomer();
+        var vehicle = CreateVehicle(dailyRate);
+        var request = CreateRequest(days);
+
+        // Act
+        var result = _sut.Calculate(customer, vehicle, request);
+
+        // Assert
+        result.BaseAmount.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(LoyaltyTier.None, 200)]
+    [InlineData(LoyaltyTier.Silver, 200)]
+    [InlineData(LoyaltyTier.Gold, 100)]
+    [InlineData(LoyaltyTier.Platinum, 100)]
+    public void Should_ChargeAdditionalDriversAfterFirstFreeDriver_When_LoyaltyTierChanges(
+    LoyaltyTier tier,
+    decimal expected)
+    {
+        // Arrange
+        var customer = CreateCustomer(tier: tier);
+        var vehicle = CreateVehicle();
+
+        var request = CreateRequest(additionalDrivers: 2);
+
+        // Act
+        var result = _sut.Calculate(customer, vehicle, request);
+
+        // Assert
+        result.AdditionalDriversCost.Should().Be(expected);
+    }
+    [Theory]
+    [InlineData(LoyaltyTier.None, 200)]
+    [InlineData(LoyaltyTier.Silver, 200)]
+    [InlineData(LoyaltyTier.Gold, 100)]
+    [InlineData(LoyaltyTier.Platinum, 100)]
+    public void Should_CalculateRemainingDriversCost_When_FirstDriverIsFree(
+    LoyaltyTier tier,
+    decimal expected)
+    { 
+        // Arrange
+        var customer = CreateCustomer(tier: tier);
+        var vehicle = CreateVehicle();
+
+        var request = CreateRequest(additionalDrivers: 2);
+
+        // Act
+        var result = _sut.Calculate(customer, vehicle, request);
+
+        // Assert
+        result.AdditionalDriversCost.Should().Be(expected);
+    }
     private sealed class FakePromoCodeRepository : IPromoCodeRepository
     {
         public PromoCode? GetByCode(string code) => null;

@@ -169,14 +169,35 @@ namespace DriveNow.UnitTests.Services
                 VehicleCategory.Economy,
                 0m,
                 "Promo code 'SAVE15' has expired");
+
+            // BR-36: Null allowed categories means all vehicle categories are allowed.
+            Add(
+                "SAVE15",
+                CreatePromo(allowAllCategories: true),
+                7,
+                VehicleCategory.Van,
+                1050m,
+                null);
+
+            // BR-36: Promo is valid on both boundary dates.
+            Add(
+                "SAVE15",
+                CreatePromo(
+                    validUntil: new DateTime(2026, 11, 9),
+                    minDays: 7),
+                7,
+                VehicleCategory.SUV,
+                1050m,
+                null);
         }
 
         private static PromoCode CreatePromo(
-            DateTime? validUntil = null,
-            int minDays = 7,
-            VehicleCategory? allowedCategory = null,
-            int maxUses = 100,
-            int usedCount = 0)
+     DateTime? validUntil = null,
+     int minDays = 7,
+     VehicleCategory? allowedCategory = null,
+     int maxUses = 100,
+     int usedCount = 0,
+     bool allowAllCategories = false)
         {
             return new PromoCode
             {
@@ -185,9 +206,11 @@ namespace DriveNow.UnitTests.Services
                 ValidFrom = new DateTime(2026, 11, 1),
                 ValidUntil = validUntil ?? new DateTime(2026, 11, 30),
                 MinDays = minDays,
-                AllowedCategories = allowedCategory is null
-                    ? [VehicleCategory.SUV]
-                    : [allowedCategory.Value],
+                AllowedCategories = allowAllCategories
+                    ? null
+                    : allowedCategory is null
+                        ? [VehicleCategory.SUV]
+                        : [allowedCategory.Value],
                 MaxUses = maxUses,
                 UsedCount = usedCount
             };
