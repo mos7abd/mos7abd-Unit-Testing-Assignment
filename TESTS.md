@@ -190,3 +190,39 @@ var vehicle = new VehicleFaker()
 Use fixed-seed fakers to create realistic and repeatable test data.
 
 Use explicit values or faker customizations for any property that affects the expected business behavior.
+
+
+
+---
+
+# Verify – Snapshot Testing
+
+## 1. Snapshot Tests
+
+Verify.Xunit is used to capture and compare the complete PriceBreakdown output for the two worked examples documented in the README.
+
+The snapshot tests are:
+
+- `Should_MatchWorkedExampleA_Snapshot`
+- `Should_MatchWorkedExampleB_Snapshot`
+
+Each test calculates the price breakdown and verifies it using:
+
+```csharp
+await Verifier.Verify(breakdown);
+```
+
+The generated `.verified.txt` files are committed alongside the tests so future test runs can detect unexpected changes.
+
+## 2. Snapshot Testing vs Explicit Assertions
+
+**Snapshot testing** is useful when an object contains multiple properties and we want to detect changes to its overall output.
+
+**Explicit assertions** are better when testing a specific business rule or boundary because they clearly communicate the expected behavior.
+
+In this assignment:
+
+- FluentAssertions with `BeEquivalentTo` is used for explicit comparison of complete expected price breakdowns.
+- Verify snapshots are used for the two README worked examples to preserve their complete expected output.
+
+Both approaches complement each other and provide different forms of regression protection.
