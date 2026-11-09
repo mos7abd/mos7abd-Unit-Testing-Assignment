@@ -78,3 +78,21 @@ Registered this customization inside `AutoMoqDataAttribute`, so tests using this
 ### Verification
 
 Added a test that verifies generated customers meet the minimum age and license requirements and are not blacklisted.
+
+
+
+## R5 — InlineAutoData
+
+Used `InlineAutoMoqDataAttribute` to combine inline test values with AutoFixture and AutoMoq.
+
+Tested the minimum customer age rule with three explicit ages:
+
+| Age | Expected Result |
+|---:|---|
+| 20 | Booking rejected |
+| 21 | Booking accepted |
+| 25 | Booking accepted |
+
+The age is provided explicitly through InlineAutoData, while the remaining test dependencies and objects are generated automatically.
+
+This keeps boundary-value scenarios readable without manually constructing every test object.
