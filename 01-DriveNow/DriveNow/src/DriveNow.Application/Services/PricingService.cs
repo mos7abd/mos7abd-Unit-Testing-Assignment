@@ -44,8 +44,16 @@ public class PricingService
 
         var durationDiscount = Round(baseAmount * durationPercent / 100m);
         var loyaltyDiscount = Round(baseAmount * loyaltyPercent / 100m);
-        var promoDiscount = PromoDiscount(request.PromoCode, days, vehicle.Category, baseAmount);
-        var insurance = InsuranceCost(request.InsurancePlan, vehicle.Category, days);
+        var promoDiscount = PromoDiscount(
+            request.PromoCode,
+            days,
+            vehicle.Category,
+            baseAmount);
+
+        var maxPromoDiscount = Round(
+            baseAmount * Math.Max(0m, 25m - durationPercent - loyaltyPercent) / 100m);
+
+        promoDiscount = Math.Min(promoDiscount, maxPromoDiscount); var insurance = InsuranceCost(request.InsurancePlan, vehicle.Category, days);
         var drivers = DriverCost(customer.LoyaltyTier, request.AdditionalDrivers, days);
         var total = Round(baseAmount + weekend + young - durationDiscount - loyaltyDiscount - promoDiscount + insurance + drivers);
 
