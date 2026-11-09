@@ -49,3 +49,32 @@ Hand-written doubles are useful when a test needs meaningful in-memory behavior,
 Moq is useful when a test mainly needs to configure a dependency or verify interactions, such as payment and SMS calls.
 
 Both approaches are valuable. The choice depends on the behavior being tested.
+
+
+## R4 — AutoFixture Random Customer Data
+
+### The Problem
+
+AutoFixture generates anonymous Customer objects with random property values.
+
+Some generated values may violate BookingService business rules, such as:
+- Customer is younger than 21.
+- Driving license is less than one year old.
+- Customer is blacklisted.
+
+This can cause tests to fail because of invalid test data rather than the behavior being tested.
+
+### The Solution
+
+Created `ValidCustomerCustomization` implementing `ICustomization`.
+
+It configures every generated Customer with:
+- DateOfBirth: 1990-01-01
+- LicenseIssueDate: 2015-01-01
+- IsBlacklisted: false
+
+Registered this customization inside `AutoMoqDataAttribute`, so tests using this attribute receive valid Customer objects automatically.
+
+### Verification
+
+Added a test that verifies generated customers meet the minimum age and license requirements and are not blacklisted.

@@ -93,4 +93,20 @@ public class BookingServiceAutoFixtureTests
             x => x.Add(It.IsAny<Booking>()),
             Times.Once);
     }
+
+    [Theory]
+    [AutoMoqData]
+    public void Should_CreateValidCustomer_When_AutoFixtureGeneratesCustomer(
+    Customer customer,
+    TimeProvider timeProvider)
+    {
+        var now = timeProvider.GetLocalNow().DateTime;
+
+        var age = now.Year - customer.DateOfBirth.Year;
+        var licenseYears = now.Year - customer.LicenseIssueDate.Year;
+
+        Assert.True(age >= 21);
+        Assert.True(licenseYears >= 1);
+        Assert.False(customer.IsBlacklisted);
+    }
 }

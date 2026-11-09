@@ -2,6 +2,7 @@
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using AutoFixture.Xunit2;
+using DriveNow.UnitTests.Customizations;
 
 namespace DriveNow.UnitTests.Attributes;
 
@@ -13,10 +14,9 @@ public sealed class AutoMoqDataAttribute : AutoDataAttribute
             var fixture = new Fixture();
 
             fixture.Customize(
-                new AutoMoqCustomization
-                {
-                    ConfigureMembers = true
-                });
+                new AutoMoqCustomization { ConfigureMembers = true });
+
+            fixture.Customize(new ValidCustomerCustomization());
 
             return fixture;
         })
