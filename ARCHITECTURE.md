@@ -109,3 +109,75 @@ All detected violations are documented for correction in Task 4.
 
 The architecture tests are expected to pass after the required production dependencies and naming conventions are corrected.
 
+---
+
+# Task 4 — Architecture Decisions
+
+## 1. Project Dependency Direction
+
+After the Task 4 refactoring, the solution follows Dependency Inversion and keeps business logic independent of infrastructure details.
+
+| Project | Depends On | Responsibility |
+|---|---|---|
+| DriveNow.Domain | None | Domain entities, enums, value objects, domain services, and exceptions. |
+| DriveNow.Application | DriveNow.Domain | Application services, use cases, models, and abstractions. |
+| DriveNow.Infrastructure | DriveNow.Application, DriveNow.Domain | Repository implementations, external services, file system operations, and persistence. |
+| DriveNow.ConsoleApp | Application, Infrastructure, Domain | Composition root and console user interface. |
+
+## 2. Interface Placement Decisions
+
+### Application.Abstractions
+
+Interfaces consumed by Application services are declared in the Application project.
+
+This includes:
+
+- Repository interfaces: `ICustomerRepository`, `IVehicleRepository`, `IBookingRepository`, and `IPromoCodeRepository`.
+- External service interfaces: `IPaymentGateway`, `ISmsSender`, `IEmailSender`, `IReferenceGenerator`, `IPaymentFailurePolicy`, and `IExecutionDelay`.
+- Logging interface: `IAuditLogger`.
+
+These interfaces belong to Application because application services depend on their contracts, not their concrete implementations.
+
+Infrastructure implements these interfaces. This allows unit tests to replace infrastructure dependencies with test doubles.
+
+### Infrastructure.Abstractions
+
+The following interfaces belong to Infrastructure:
+
+- `IEmailOutbox`
+- `IAuditLogWriter`
+
+They are internal infrastructure boundaries used to isolate file system operations. Application services do not consume them, so they do not belong in Application.
+
+## 3. Dependency Inversion
+
+The dependency direction is:
+
+- Domain has no dependency on other DriveNow projects.
+- Application depends only on Domain.
+- Infrastructure depends on Application and Domain to implement their contracts.
+- ConsoleApp references Application and Infrastructure to compose the application.
+
+Application does not reference Infrastructure. This prevents business logic from depending on implementation details.
+
+## 4. Manual Dependency Injection
+
+The ConsoleApp acts as the composition root.
+
+It creates the shared `TimeProvider`, database instance, repositories, external service implementations, and application services.
+
+Dependencies are passed through constructors manually. No DI container is used.
+
+## 5. Testability
+
+Hidden dependencies are exposed through injectable abstractions, including:
+
+- `TimeProvider` for controlling time.
+- `IReferenceGenerator` for controlling generated references.
+- Repository interfaces for replacing data access.
+- External service interfaces for replacing payment, SMS, email, delay, and failure behavior.
+- Infrastructure-specific interfaces for isolating file system operations.
+
+The in-memory database is an instance rather than a static shared store, allowing tests to use isolated data.
+
+These decisions preserve the architecture rules established in Task 3 while making application behavior controllable in tests.
