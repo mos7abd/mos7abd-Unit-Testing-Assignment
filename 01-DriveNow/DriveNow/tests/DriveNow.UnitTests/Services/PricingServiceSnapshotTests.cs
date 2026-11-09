@@ -12,7 +12,7 @@ namespace DriveNow.UnitTests.Services;
 public class PricingServiceSnapshotTests
 {
     [Fact]
-    public async Task Should_MatchWorkedExampleA_Snapshot()
+    public async Task Should_MatchPricingSnapshot_When_WorkedExampleAIsUsed()
     {
         var customer = new Customer
         {
@@ -42,7 +42,7 @@ public class PricingServiceSnapshotTests
     }
 
     [Fact]
-    public async Task Should_MatchWorkedExampleB_Snapshot()
+    public async Task Should_MatchPricingSnapshot_When_WorkedExampleBIsUsed()
     {
         var customer = new Customer
         {

@@ -11,7 +11,7 @@ namespace DriveNow.UnitTests.Services;
 public class BookingServiceSnapshotTests
 {
     [Fact]
-    public async Task Should_MatchCreatedBooking_Snapshot()
+    public async Task Should_MatchBookingSnapshot_When_BookingIsCreated()
     {
         // Arrange
         var now = new DateTimeOffset(

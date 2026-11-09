@@ -138,7 +138,53 @@ public class StubPromoCodeRepository : IPromoCodeRepository
     {
     }
 }
+public class SpyPromoCodeRepository : IPromoCodeRepository
+{
+    private readonly PromoCode _promo;
 
+    public int UpdateCalls { get; private set; }
+
+    public PromoCode? UpdatedPromo { get; private set; }
+
+    public SpyPromoCodeRepository(PromoCode promo)
+    {
+        _promo = promo;
+    }
+    public class SpyEmailSender : IEmailSender
+    {
+        public List<(string To, string Subject, string Body)> Messages { get; } = [];
+
+        public void Send(string to, string subject, string body)
+        {
+            Messages.Add((to, subject, body));
+        }
+    }
+
+    public class SpyAuditLogger : IAuditLogger
+    {
+        public List<string> Messages { get; } = [];
+
+        public void Write(string message)
+        {
+            Messages.Add(message);
+        }
+    }
+    public PromoCode? GetByCode(string code)
+    {
+        return string.Equals(
+            code,
+            _promo.Code,
+            StringComparison.OrdinalIgnoreCase)
+            ? _promo
+            : null;
+    }
+
+    public void Update(PromoCode promo)
+    {
+        UpdateCalls++;
+        UpdatedPromo = promo;
+    }
+}
 public class StubAuditLogger : IAuditLogger
 {
     public void Write(string message)
@@ -165,4 +211,15 @@ public class FixedTimeProvider : TimeProvider
 
     public override TimeZoneInfo LocalTimeZone =>
         TimeZoneInfo.Utc;
+}
+public class FailingPaymentGateway : IPaymentGateway
+{
+    public string Charge(int customerId, decimal amount, string description)
+    {
+        throw new InvalidOperationException("Payment failed");
+    }
+
+    public void Refund(int customerId, decimal amount, string description)
+    {
+    }
 }
