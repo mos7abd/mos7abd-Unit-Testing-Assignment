@@ -144,3 +144,22 @@ AutoFixture is useful when a test needs many objects and dependencies with minim
 Bogus is useful when tests need realistic, repeatable, and customizable domain data.
 
 They complement each other and can be used together when a test needs both automatic dependency creation and realistic test data.
+
+
+## R7 — Booking Snapshot with Verify
+
+Added `BookingServiceSnapshotTests` to capture the complete Booking created by `BookingService.CreateBooking`.
+
+The test uses deterministic test dependencies to keep the snapshot stable:
+
+- `FixedTimeProvider` provides a fixed date and time.
+- `StubReferenceGenerator` generates a predictable booking reference.
+- `FakeBookingRepository` assigns predictable booking IDs.
+
+This prevents changing timestamps, references, and IDs from causing unnecessary snapshot failures.
+
+The verified snapshot is stored in:
+
+`BookingServiceSnapshotTests.Should_MatchCreatedBooking_Snapshot.verified.txt`
+
+The test passed after the snapshot was reviewed and approved.
