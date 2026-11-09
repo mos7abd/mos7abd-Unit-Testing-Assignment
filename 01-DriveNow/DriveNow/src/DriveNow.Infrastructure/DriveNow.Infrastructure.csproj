@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DriveNow.Domain\DriveNow.Domain.csproj" />
+	 <ProjectReference Include="..\DriveNow.Application\DriveNow.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

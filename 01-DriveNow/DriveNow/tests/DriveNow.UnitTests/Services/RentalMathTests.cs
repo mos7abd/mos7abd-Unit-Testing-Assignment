@@ -12,7 +12,8 @@ public class RentalMathTests
     [InlineData(2000, 11, 10, 2026, 11, 11, 26)]
     [InlineData(2000, 2, 29, 2025, 2, 27, 24)]
     [InlineData(2000, 2, 29, 2025, 2, 28, 25)]
-    public void Should_CalculateAgeCorrectly(
+    public void Should_CalculateAge_When_GivenBirthDate
+(
         int birthYear,
         int birthMonth,
         int birthDay,
@@ -39,7 +40,7 @@ public class RentalMathTests
     [InlineData(2000, 11, 10, 2026, 11, 11, 26)]
     [InlineData(2000, 2, 29, 2025, 2, 27, 24)]
     [InlineData(2000, 2, 29, 2025, 2, 28, 25)]
-    public void Should_ReturnCorrectLicenseYears_WhenCheckingDateBoundaries(
+    public void Should_ReturnCorrectLicenseYears_When_CheckingDateBoundaries(
     int issueYear,
     int issueMonth,
     int issueDay,
@@ -66,7 +67,7 @@ public class RentalMathTests
     [InlineData(25, 0, 1)]
     [InlineData(25, 1, 2)]
     [InlineData(72, 0, 3)]
-    public void Should_ReturnCorrectRentalDays_WhenCheckingDurationBoundaries(
+    public void Should_ReturnCorrectRentalDays_When_CheckingDurationBoundaries(
     int hours,
     int minutes,
     int expectedDays)
@@ -84,7 +85,7 @@ public class RentalMathTests
 
     [Fact]
     [Trait("Rule", "BR-03")]
-    public void Should_ThrowArgumentException_WhenReturnAtEqualsPickup()
+    public void Should_ThrowArgumentException_When_ReturnAtEqualsPickup()
     {
         // Arrange
         var pickup = new DateTime(2026, 11, 8, 10, 0, 0);
@@ -100,7 +101,7 @@ public class RentalMathTests
 
     [Fact]
     [Trait("Rule", "BR-03")]
-    public void Should_ThrowArgumentException_WhenReturnAtIsBeforePickup()
+    public void Should_ThrowArgumentException_When_ReturnAtIsBeforePickup()
     {
         // Arrange
         var pickup = new DateTime(2026, 11, 8, 10, 0, 0);
@@ -117,7 +118,7 @@ public class RentalMathTests
 
     [Fact]
     [Trait("Rule", "BR-01")]
-    public void Should_HandleFebruary29Birthday_InLeapYears()
+    public void Should_HandleFebruary29Birthday_When_YearIsLeap()
     {
         // Arrange
         var dateOfBirth = new DateTime(2000, 2, 29);
@@ -132,7 +133,7 @@ public class RentalMathTests
 
     [Fact]
     [Trait("Rule", "BR-02")]
-    public void Should_HandleFebruary29Anniversary_InLeapYears()
+    public void Should_HandleFebruary29Anniversary_When_YearIsLeap()
     {
         // Arrange
         var issueDate = new DateTime(2000, 2, 29);
@@ -147,7 +148,7 @@ public class RentalMathTests
 
     [Fact]
     [Trait("Rule", "BR-03")]
-    public void Should_ReturnAtLeastOneDay_WhenRentalDurationIsLessThan24Hours()
+    public void Should_ReturnAtLeastOneDay_When_DurationIsLessThan24Hours()
     {
         // Arrange
         var pickup = new DateTime(2026, 11, 8, 10, 0, 0);
@@ -162,7 +163,7 @@ public class RentalMathTests
 
     [Fact]
     [Trait("Rule", "BR-03")]
-    public void Should_AddExtraDay_WhenDurationIs48HoursAnd61Minutes()
+    public void Should_AddExtraDay_When_DurationIs48HoursAnd61Minutes()
     {
         // Arrange
         var pickup = new DateTime(2026, 11, 8, 10, 0, 0);
@@ -177,7 +178,7 @@ public class RentalMathTests
 
     [Fact]
     [Trait("Rule", "BR-03")]
-    public void Should_ReturnOneDay_WhenRentalDurationIsExactly24Hours()
+    public void Should_ReturnOneDay_When_DurationIsExactly24Hours()
     {
         // Arrange
         var pickup = new DateTime(2026, 11, 8, 10, 0, 0);

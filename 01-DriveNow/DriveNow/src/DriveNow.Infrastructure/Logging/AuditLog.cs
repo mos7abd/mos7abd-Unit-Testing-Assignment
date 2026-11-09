@@ -1,10 +1,26 @@
 namespace DriveNow.Infrastructure.Logging;
+using global::DriveNow.Application.Abstractions.Logging;
+using global::DriveNow.Infrastructure.Abstractions;
 
-public static class AuditLog
+
+public class AuditLog : IAuditLogger
 {
-    public static void Write(string message)
+    private readonly IAuditLogWriter _writer;
+    private readonly TimeProvider _timeProvider;
+
+    public AuditLog(
+        IAuditLogWriter writer,
+        TimeProvider timeProvider)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "audit.log");
-        File.AppendAllText(path, $"[{DateTime.Now:O}] {message}{Environment.NewLine}");
+        _writer = writer;
+        _timeProvider = timeProvider;
+    }
+
+    public void Write(string message)
+    {
+        var now = _timeProvider.GetLocalNow();
+
+        _writer.Append(
+            $"[{now:O}] {message}{Environment.NewLine}");
     }
 }

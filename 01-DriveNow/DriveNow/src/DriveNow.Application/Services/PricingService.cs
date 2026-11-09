@@ -1,16 +1,26 @@
+
+using DriveNow.Application.Abstractions.Repositories;
 using DriveNow.Application.Models;
 using DriveNow.Domain.Entities;
 using DriveNow.Domain.Enums;
 using DriveNow.Domain.Exceptions;
 using DriveNow.Domain.Services;
 using DriveNow.Domain.ValueObjects;
-using DriveNow.Infrastructure.Repositories;
 
 namespace DriveNow.Application.Services;
 
 public class PricingService
 {
-    readonly PromoCodeRepository _promos = new();
+    private readonly IPromoCodeRepository _promos;
+    private readonly TimeProvider _timeProvider;
+
+    public PricingService(
+        IPromoCodeRepository promos,
+        TimeProvider timeProvider)
+    {
+        _promos = promos;
+        _timeProvider = timeProvider;
+    }
 
     public PriceBreakdown Calculate(Customer customer, Vehicle vehicle, BookingRequest request)
     {
@@ -28,6 +38,7 @@ public class PricingService
             LoyaltyTier.Platinum => 15m,
             _ => 0m
         };
+
         if (durationPercent + loyaltyPercent > 25m)
             loyaltyPercent = 25m - durationPercent;
 
@@ -56,9 +67,11 @@ public class PricingService
     static decimal WeekendSurcharge(decimal dailyRate, DateTime pickup, int days)
     {
         var weekendDays = 0;
+
         for (var k = 0; k < days; k++)
         {
             var start = pickup.AddHours(k * 24);
+
             if (start.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday)
                 weekendDays++;
         }
@@ -74,7 +87,9 @@ public class PricingService
         var promo = _promos.GetByCode(code)
             ?? throw new InvalidPromoCodeException($"Promo code '{code}' does not exist");
 
-        if (DateTime.Today < promo.ValidFrom || DateTime.Today > promo.ValidUntil)
+        var today = _timeProvider.GetLocalNow().Date;
+
+        if (today < promo.ValidFrom || today > promo.ValidUntil)
             throw new InvalidPromoCodeException($"Promo code '{code}' has expired");
 
         if (days < promo.MinDays)
@@ -97,6 +112,7 @@ public class PricingService
             InsurancePlan.Premium => 300m,
             _ => 0m
         };
+
         if (category == VehicleCategory.Luxury)
             perDay *= 2;
 
@@ -106,6 +122,7 @@ public class PricingService
     static decimal DriverCost(LoyaltyTier tier, int additionalDrivers, int days)
     {
         var billable = additionalDrivers;
+
         if (tier >= LoyaltyTier.Silver && billable > 0)
             billable--;
 

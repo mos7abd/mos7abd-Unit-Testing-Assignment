@@ -24,7 +24,7 @@ namespace DriveNow.ArchitectureTests
             Assert.True(result.IsSuccessful);
         }
 
-        //R2
+        // R2
         [Fact]
         public void Should_OnlyDependOnDomain_WhenCheckingApplication()
         {
@@ -38,7 +38,7 @@ namespace DriveNow.ArchitectureTests
 
             Assert.True(
                 result.IsSuccessful,
-                string.Join(", ", result.FailingTypes.Select(t => t.FullName))
+                string.Join(", ", (result.FailingTypes ?? []).Select(t => t.FullName))
             );
         }
         //R3
