@@ -30,7 +30,7 @@ public class PricingService
         var age = RentalMath.CalculateAge(customer.DateOfBirth, request.PickupAt);
         var young = age is >= 21 and <= 24 ? Round(baseAmount * 0.15m) : 0m;
 
-        var durationPercent = days >= 14 ? 15m : days > 7 && days < 14 ? 10m : 0m;
+        var durationPercent = days >= 14 ? 15m : days >= 7 ? 10m : 0m;
         var loyaltyPercent = customer.LoyaltyTier switch
         {
             LoyaltyTier.Silver => 5m,
@@ -123,8 +123,11 @@ public class PricingService
     {
         var billable = additionalDrivers;
 
-        if (tier >= LoyaltyTier.Silver && billable > 0)
+        if ((tier == LoyaltyTier.Gold || tier == LoyaltyTier.Platinum)
+    && billable > 0)
+        {
             billable--;
+        }
 
         return Round(100m * billable * days);
     }
