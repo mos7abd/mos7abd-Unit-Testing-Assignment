@@ -590,6 +590,61 @@ public class BookingServiceBusinessRulesTests
 
         Assert.Contains($"Booking {booking.Reference} created", audit.Messages);
     }
+
+
+    [Theory]
+    [InlineData(10, 59, false)]
+    [InlineData(11, 0, true)]
+    [InlineData(11, 1, true)]
+    public void Should_ValidateRentalStart_When_CurrentTimeChanges(
+    int hour,
+    int minute,
+    bool shouldStart)
+    {
+        // Arrange
+        var currentTime = new DateTimeOffset(
+            2026, 11, 9, hour, minute, 0, TimeSpan.Zero);
+
+        var (sut, bookings, _, _) = CreateScenario(
+            VehicleCategory.Economy,
+            new DateTime(1990, 1, 1),
+            currentTime: currentTime);
+
+        var booking = new Booking
+        {
+            Id = 50,
+            CustomerId = 1,
+            VehicleId = 10,
+            PickupAt = new DateTime(2026, 11, 9, 12, 0, 0),
+            ReturnAt = new DateTime(2026, 11, 10, 12, 0, 0),
+            Status = BookingStatus.Reserved,
+            Reference = "DN-TEST-0001"
+        };
+
+        bookings.Bookings.Add(booking);
+
+        // Act
+        if (shouldStart)
+        {
+            sut.StartRental(booking.Id);
+        }
+        else
+        {
+            var exception = Assert.Throws<InvalidBookingStateException>(
+                () => sut.StartRental(booking.Id));
+
+            Assert.Equal("Too early to start this rental", exception.Message);
+        }
+
+        // Assert
+        Assert.Equal(
+            shouldStart ? BookingStatus.Active : BookingStatus.Reserved,
+            booking.Status);
+
+        Assert.Same(booking, bookings.GetById(booking.Id));
+    }
+
+
     private static (
         BookingService Sut,
         FakeBookingRepository Bookings,
@@ -605,13 +660,14 @@ public class BookingServiceBusinessRulesTests
     int openBookingsCount = 0,
     LoyaltyTier loyaltyTier = LoyaltyTier.None,
     bool paymentFails = false,
-    IPromoCodeRepository? promoRepository = null)
+    IPromoCodeRepository? promoRepository = null,
+    DateTimeOffset? currentTime = null)
     {
         var now = new DateTimeOffset(
             2026, 11, 9, 9, 0, 0, TimeSpan.Zero);
 
-        var timeProvider = new FixedTimeProvider(now);
-
+        var timeProvider = new FixedTimeProvider(currentTime ?? now);
+        
         var customer = new Customer
         {
             Id = 1,
