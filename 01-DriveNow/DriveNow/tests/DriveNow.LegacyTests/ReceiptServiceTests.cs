@@ -1,97 +1,56 @@
+
 using DriveNow.Application.Receipts;
 using DriveNow.Application.Services;
 using DriveNow.Domain.Entities;
+using DriveNow.Domain.Enums;
 using DriveNow.Domain.ValueObjects;
-using FluentAssertions;
-using Moq;
+using VerifyTests;
 
 namespace DriveNow.LegacyTests;
 
 public class ReceiptServiceTests
 {
     [Fact]
-    public void Build_CallsLineItemFactoryOnce()
+    public async Task Should_MatchReceiptSnapshot_When_CompletedRentalHasLateFeeAndDamage()
     {
-        var (sut, factory, _, _, _) = Create();
-
-        sut.Build(new Booking(), null);
-
-        factory.Verify(itemFactory => itemFactory.Create(It.IsAny<Booking>(), It.IsAny<ReturnReport?>()), Times.Once);
-    }
-
-    [Fact]
-    public void Build_CallsTaxCalculatorOncePerLine()
-    {
-        var (sut, _, tax, _, _) = Create();
-
-        sut.Build(new Booking(), null);
-
-        tax.Verify(calculator => calculator.CalculateVat(It.IsAny<decimal>()), Times.Exactly(3));
-    }
-
-    [Fact]
-    public void Build_CallsCurrencyFormatterTwicePerLinePlusTwo()
-    {
-        var (sut, _, _, currency, _) = Create();
-
-        sut.Build(new Booking(), null);
-
-        currency.Verify(formatter => formatter.Format(It.IsAny<decimal>()), Times.Exactly(8));
-    }
-
-    [Fact]
-    public void Build_CallsCollaboratorsInOrder()
-    {
-        var items = new List<LineItem> { new(), new(), new() };
-        var factory = new Mock<ILineItemFactory>(MockBehavior.Strict);
-        var tax = new Mock<ITaxCalculator>(MockBehavior.Strict);
-        var currency = new Mock<ICurrencyFormatter>(MockBehavior.Strict);
-        var receipt = new Mock<IReceiptFormatter>(MockBehavior.Strict);
-        var sequence = new MockSequence();
-
-        factory.InSequence(sequence)
-            .Setup(itemFactory => itemFactory.Create(It.IsAny<Booking>(), It.IsAny<ReturnReport?>()))
-            .Returns(items);
-        for (var i = 0; i < 3; i++)
-            tax.InSequence(sequence).Setup(calculator => calculator.CalculateVat(It.IsAny<decimal>())).Returns(0m);
-        for (var i = 0; i < 8; i++)
-            currency.InSequence(sequence).Setup(formatter => formatter.Format(It.IsAny<decimal>())).Returns("X");
-        receipt.InSequence(sequence)
-            .Setup(formatter => formatter.Render(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
-            .Returns("RECEIPT");
-
-        var sut = new ReceiptService(factory.Object, tax.Object, currency.Object, receipt.Object);
-        sut.Build(new Booking(), null);
-    }
-
-    [Fact]
-    public void Build_ReturnsWhatTheRendererReturns()
-    {
-        var (sut, _, _, _, receipt) = Create();
-
-        var result = sut.Build(new Booking(), null);
-
-        result.Should().Be("RECEIPT");
-        receipt.Verify(formatter => formatter.Render(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()), Times.Once);
-    }
-
-    static (ReceiptService Sut, Mock<ILineItemFactory> Factory, Mock<ITaxCalculator> Tax, Mock<ICurrencyFormatter> Currency, Mock<IReceiptFormatter> Receipt) Create()
-    {
-        var items = new List<LineItem>
+        // Arrange
+        var booking = new Booking
         {
-            new() { Description = "A", Amount = 10m },
-            new() { Description = "B", Amount = 20m },
-            new() { Description = "C", Amount = 30m }
+            Id = 1,
+            Reference = "DN-TEST-0001",
+            CustomerId = 1,
+            VehicleId = 7,
+            PickupAt = new DateTime(2026, 11, 7, 10, 0, 0),
+            ReturnAt = new DateTime(2026, 11, 10, 10, 0, 0),
+            ActualReturnAt = new DateTime(2026, 11, 10, 12, 0, 0),
+            Status = BookingStatus.Completed,
+            Price = new PriceBreakdown
+            {
+                RentalDays = 3,
+                BaseAmount = 12000m,
+                InsuranceCost = 500m,
+                Total = 12500m
+            }
         };
-        var factory = new Mock<ILineItemFactory>();
-        var tax = new Mock<ITaxCalculator>();
-        var currency = new Mock<ICurrencyFormatter>();
-        var receipt = new Mock<IReceiptFormatter>();
-        factory.Setup(itemFactory => itemFactory.Create(It.IsAny<Booking>(), It.IsAny<ReturnReport?>())).Returns(items);
-        tax.Setup(calculator => calculator.CalculateVat(It.IsAny<decimal>())).Returns(0m);
-        currency.Setup(formatter => formatter.Format(It.IsAny<decimal>())).Returns("X");
-        receipt.Setup(formatter => formatter.Render(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).Returns("RECEIPT");
-        var sut = new ReceiptService(factory.Object, tax.Object, currency.Object, receipt.Object);
-        return (sut, factory, tax, currency, receipt);
+
+        var report = new ReturnReport
+        {
+            LateMinutes = 120,
+            LateFee = 800m,
+            DamageCharge = 1000m,
+            TotalExtra = 1800m
+        };
+
+        var sut = new ReceiptService(
+            new LineItemFactory(),
+            new TaxCalculator(),
+            new CurrencyFormatter(),
+            new ReceiptFormatter());
+
+        // Act
+        var receipt = sut.Build(booking, report);
+
+        // Assert
+        await Verifier.Verify(receipt);
     }
 }
