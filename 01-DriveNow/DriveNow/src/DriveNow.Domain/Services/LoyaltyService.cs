@@ -1,3 +1,4 @@
+
 using DriveNow.Domain.Entities;
 using DriveNow.Domain.Enums;
 
@@ -8,6 +9,7 @@ public static class LoyaltyService
     public static void UpgradeTier(Customer customer)
     {
         var target = LoyaltyTier.None;
+
         if (customer.CompletedRentals >= 30)
             target = LoyaltyTier.Platinum;
         else if (customer.CompletedRentals >= 15)
@@ -15,6 +17,7 @@ public static class LoyaltyService
         else if (customer.CompletedRentals >= 5)
             target = LoyaltyTier.Silver;
 
-        customer.LoyaltyTier = target;
+        if (target > customer.LoyaltyTier)
+            customer.LoyaltyTier = target;
     }
 }
