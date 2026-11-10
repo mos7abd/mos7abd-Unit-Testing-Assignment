@@ -51,3 +51,43 @@ The four interfaces involved were:
 - `IReceiptFormatter`
 
 Their necessity should be evaluated by checking their real implementations and usage across the application, not merely by whether they make mocking possible. This will be addressed in R7.
+
+
+## R7 — Removing Unnecessary Interfaces
+
+After reviewing all references to the four receipt-related interfaces, I found that they were only used by `ReceiptService` and their corresponding concrete implementations. The legacy tests used them to create mocks, but no other production component depended on these abstractions.
+
+I removed all four interfaces and changed `ReceiptService` to depend directly on the concrete implementations.
+
+### Decisions
+
+1. **ILineItemFactory — Removed**
+   - `LineItemFactory` is the only implementation.
+   - The real factory is now used in the receipt snapshot test.
+   - There is no current requirement to replace or mock this dependency.
+
+2. **ITaxCalculator — Removed**
+   - `TaxCalculator` contains the actual VAT calculation.
+   - Using the real implementation allows the snapshot test to detect incorrect VAT values.
+   - Mocking it with a fixed return value could hide calculation defects.
+
+3. **ICurrencyFormatter — Removed**
+   - `CurrencyFormatter` provides straightforward amount formatting.
+   - The real formatter is used by the receipt snapshot test.
+   - There is no current need for a separate mockable abstraction.
+
+4. **IReceiptFormatter — Removed**
+   - `ReceiptFormatter` renders the final receipt text.
+   - The snapshot test verifies the actual rendered output.
+   - Returning a mocked string would not verify the receipt's real content.
+
+### Verification
+
+After removing the interfaces and updating `ReceiptService` to use the concrete classes:
+
+- The Application project built successfully.
+- Legacy Tests passed.
+- Unit Tests passed.
+- Architecture Tests passed.
+
+The decision is based on current application requirements and actual usage. These interfaces could be reconsidered if multiple implementations, external integrations, or a genuine substitution requirement are introduced in the future.

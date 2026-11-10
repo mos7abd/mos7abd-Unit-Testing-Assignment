@@ -1,3 +1,4 @@
+﻿
 using DriveNow.Application.Receipts;
 using DriveNow.Domain.Entities;
 using DriveNow.Domain.ValueObjects;
@@ -6,16 +7,16 @@ namespace DriveNow.Application.Services;
 
 public class ReceiptService
 {
-    readonly ILineItemFactory _lineItems;
-    readonly ITaxCalculator _tax;
-    readonly ICurrencyFormatter _currency;
-    readonly IReceiptFormatter _receipts;
+    private readonly LineItemFactory _lineItems;
+    private readonly TaxCalculator _tax;
+    private readonly CurrencyFormatter _currency;
+    private readonly ReceiptFormatter _receipts;
 
     public ReceiptService(
-        ILineItemFactory lineItems,
-        ITaxCalculator tax,
-        ICurrencyFormatter currency,
-        IReceiptFormatter receipts)
+        LineItemFactory lineItems,
+        TaxCalculator tax,
+        CurrencyFormatter currency,
+        ReceiptFormatter receipts)
     {
         _lineItems = lineItems;
         _tax = tax;
@@ -26,8 +27,10 @@ public class ReceiptService
     public string Build(Booking booking, ReturnReport? report)
     {
         var items = _lineItems.Create(booking, report);
+
         decimal vat = 0m;
         decimal net = 0m;
+
         foreach (var item in items)
         {
             vat += _tax.CalculateVat(item.Amount);
@@ -35,6 +38,7 @@ public class ReceiptService
         }
 
         var total = net + vat;
+
         var formattedAmounts = new List<string>();
         var width = 0;
 
