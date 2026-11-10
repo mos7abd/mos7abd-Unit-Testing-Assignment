@@ -35,19 +35,31 @@ public class ReceiptService
         }
 
         var total = net + vat;
+        var formattedAmounts = new List<string>();
         var width = 0;
-        foreach (var item in items)
-            width = Math.Max(width, _currency.Format(item.Amount).Length);
 
-        var lines = new List<string>();
         foreach (var item in items)
         {
             var amount = _currency.Format(item.Amount);
-            lines.Add(item.Description.PadRight(30, '.') + amount.PadLeft(width));
+
+            formattedAmounts.Add(amount);
+            width = Math.Max(width, amount.Length);
+        }
+
+        var lines = new List<string>();
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var amount = formattedAmounts[i];
+
+            lines.Add(
+                items[i].Description.PadRight(30, '.') +
+                amount.PadLeft(width));
         }
 
         lines.Add("VAT 14%".PadRight(30, '.') + _currency.Format(vat).PadLeft(width));
         lines.Add("Total".PadRight(30, '.') + _currency.Format(total).PadLeft(width));
+
         return _receipts.Render(booking.Reference, lines);
     }
 }
