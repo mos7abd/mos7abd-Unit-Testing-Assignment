@@ -1,4 +1,5 @@
-﻿using ParkSmart.Domain;
+﻿using ParkSmart.Application.Services;
+using ParkSmart.Domain;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,7 +24,7 @@ namespace ParkSmart.UnitTests
                 ExitTime = entryTime.AddMinutes(minutes)
             };
 
-            var calculator = new ParkingFeeCalculator();
+            var calculator = new ParkingFeeCalculatorService();
 
             // Act
             var result = calculator.Calculate(session);
