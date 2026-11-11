@@ -16,7 +16,9 @@ namespace ParkSmart.Application
                 return 0m;
             }
 
-            return 10m;
+            var startedHours = (int)Math.Ceiling(duration.TotalMinutes / 60);
+
+            return startedHours * 10m;
         }
     }
 }
