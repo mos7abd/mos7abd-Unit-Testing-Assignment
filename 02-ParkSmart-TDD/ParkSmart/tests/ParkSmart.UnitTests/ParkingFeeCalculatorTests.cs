@@ -134,6 +134,35 @@ namespace ParkSmart.UnitTests
         }
 
 
+        [Theory]
+        [InlineData(VehicleType.Motorcycle, 180, 15)]
+        [InlineData(VehicleType.Truck, 600, 200)]
+        [InlineData(VehicleType.Truck, 1800, 600)]
+        public void Should_ApplyVehicleSpecificRates_When_VehicleTypeChanges(
+            VehicleType vehicle,
+            int minutes,
+            decimal expectedFee)
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddMinutes(minutes),
+                Vehicle = vehicle
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(expectedFee, result);
+        }
+
+
     }
 }
 
