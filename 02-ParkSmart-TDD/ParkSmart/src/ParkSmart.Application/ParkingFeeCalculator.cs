@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ParkSmart.Application.Services
+namespace ParkSmart.Application
 {
-    public class ParkingFeeCalculatorService
+    public class ParkingFeeCalculator
     {
         public decimal Calculate(ParkingSession session)
         {
