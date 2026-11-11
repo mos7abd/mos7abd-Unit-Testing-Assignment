@@ -61,6 +61,51 @@ namespace ParkSmart.UnitTests
             Assert.Equal(expectedFee, result);
         }
 
+
+        [Fact]
+        public void Should_ThrowArgumentException_When_ExitTimeIsBeforeEntryTime()
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddMinutes(-1)
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(
+                () => calculator.Calculate(session));
+
+            // Assert
+            Assert.Equal("Exit time must be after entry time.", exception.Message);
+        }
+
+        [Fact]
+        public void Should_ReturnZero_When_EntryTimeEqualsExitTime()
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(0m, result);
+        }
+
+
     }
 }
 
