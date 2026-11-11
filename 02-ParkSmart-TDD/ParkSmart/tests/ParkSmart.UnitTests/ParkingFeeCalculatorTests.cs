@@ -32,6 +32,35 @@ namespace ParkSmart.UnitTests
             // Assert
             Assert.Equal(0m, result);
         }
+
+
+        [Theory]
+        [InlineData(16, 10)]
+        [InlineData(60, 10)]
+        [InlineData(61, 20)]
+        [InlineData(180, 30)]
+        public void Should_ChargeTenPoundsPerStartedHour_When_ParkingExceedsFreePeriod(
+            int minutes,
+            decimal expectedFee)
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddMinutes(minutes)
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(expectedFee, result);
+        }
+
     }
 }
 
