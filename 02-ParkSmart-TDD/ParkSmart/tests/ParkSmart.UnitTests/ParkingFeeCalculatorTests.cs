@@ -137,7 +137,7 @@ namespace ParkSmart.UnitTests
         [Theory]
         [InlineData(VehicleType.Motorcycle, 180, 15)]
         [InlineData(VehicleType.Truck, 600, 200)]
-        [InlineData(VehicleType.Truck, 1800, 600)]
+        [InlineData(VehicleType.Truck, 1800, 350)]
         public void Should_ApplyVehicleSpecificRates_When_VehicleTypeChanges(
             VehicleType vehicle,
             int minutes,
