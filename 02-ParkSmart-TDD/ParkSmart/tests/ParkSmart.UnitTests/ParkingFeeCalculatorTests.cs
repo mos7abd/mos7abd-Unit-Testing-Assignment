@@ -106,6 +106,34 @@ namespace ParkSmart.UnitTests
         }
 
 
+        [Theory]
+        [InlineData(600, 80)]
+        [InlineData(1800, 140)]
+        [InlineData(2880, 160)]
+        [InlineData(2890, 170)]
+        public void Should_ApplyDailyCap_When_ParkingExceedsDailyLimit(
+            int minutes,
+            decimal expectedFee)
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddMinutes(minutes)
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(expectedFee, result);
+        }
+
+
     }
 }
 
