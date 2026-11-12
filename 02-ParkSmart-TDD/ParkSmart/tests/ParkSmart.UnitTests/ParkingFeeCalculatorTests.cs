@@ -162,6 +162,34 @@ namespace ParkSmart.UnitTests
             Assert.Equal(expectedFee, result);
         }
 
+        [Theory]
+        [InlineData(VehicleType.Car, 30)]
+        [InlineData(VehicleType.Motorcycle, 15)]
+        [InlineData(VehicleType.Truck, 75)]
+        public void Should_ApplyNightFlatRate_When_ParkingSessionQualifies(
+            VehicleType vehicle,
+            decimal expectedFee)
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 12, 23, 0, 0);
+            var exitTime = new DateTime(2026, 11, 13, 7, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = exitTime,
+                Vehicle = vehicle
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(expectedFee, result);
+        }
+
 
     }
 }
