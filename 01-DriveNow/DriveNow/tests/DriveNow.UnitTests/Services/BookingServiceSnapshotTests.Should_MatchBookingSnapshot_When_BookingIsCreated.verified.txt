@@ -1,0 +1,16 @@
+﻿{
+  Id: 1,
+  Reference: DN-20261109-AAAA,
+  CustomerId: 1,
+  VehicleId: 10,
+  PickupAt: DateTime_1,
+  ReturnAt: DateTime_2,
+  Price: {
+    RentalDays: 1,
+    BaseAmount: 100.0,
+    Total: 100.00
+  },
+  Deposit: 1000.0,
+  CreatedAt: DateTime_3,
+  StartMileage: 5000
+}
