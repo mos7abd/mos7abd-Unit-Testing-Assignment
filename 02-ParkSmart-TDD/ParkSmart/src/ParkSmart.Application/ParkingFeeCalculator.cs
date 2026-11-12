@@ -8,9 +8,6 @@ namespace ParkSmart.Application
     public class ParkingFeeCalculator
     {
 
-
-
-
         public decimal Calculate(ParkingSession session)
         {
             if (session.ExitTime < session.EntryTime)
@@ -19,11 +16,6 @@ namespace ParkSmart.Application
             }
 
             var duration = session.ExitTime - session.EntryTime;
-
-            if (duration <= TimeSpan.FromMinutes(15))
-            {
-                return 0m;
-            }
 
             var (hourlyRate, dailyCap) = session.Vehicle switch
             {
@@ -41,6 +33,26 @@ namespace ParkSmart.Application
 
             var normalFee = fullDays * dailyCap + Math.Min(remainingFee, dailyCap);
 
+            // Lost ticket minimum fee
+            if (session.TicketLost)
+            {
+                var lostTicketMinimum = session.Vehicle switch
+                {
+                    VehicleType.Motorcycle => 75m,
+                    VehicleType.Truck => 300m,
+                    _ => 150m
+                };
+
+                return Math.Max(normalFee, lostTicketMinimum);
+            }
+
+            // Free parking up to 15 minutes
+            if (duration <= TimeSpan.FromMinutes(15))
+            {
+                return 0m;
+            }
+
+            // Night flat rate
             var qualifiesForNightRate =
                 session.EntryTime.TimeOfDay >= new TimeSpan(22, 0, 0) &&
                 session.ExitTime.Date == session.EntryTime.Date.AddDays(1) &&
@@ -60,6 +72,7 @@ namespace ParkSmart.Application
 
             return normalFee;
         }
+
 
 
 
