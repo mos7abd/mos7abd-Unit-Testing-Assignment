@@ -78,8 +78,7 @@ namespace ParkSmart.Application
                 }
             }
 
-            var chargingFee = session.ChargedKwh * 3.50m;
-            var totalFee = normalFee + chargingFee;
+            var totalFee = normalFee + CalculateChargingFee(session.ChargedKwh);
 
             return Math.Round(totalFee, 2, MidpointRounding.AwayFromZero);
         }
@@ -116,6 +115,11 @@ namespace ParkSmart.Application
                    session.EntryTime.DayOfWeek <= DayOfWeek.Friday &&
                    session.EntryTime.TimeOfDay >= new TimeSpan(7, 0, 0) &&
                    session.ExitTime.TimeOfDay <= new TimeSpan(19, 0, 0);
+        }
+
+        private static decimal CalculateChargingFee(decimal chargedKwh)
+        {
+            return chargedKwh * 3.50m;
         }
     }
 }
