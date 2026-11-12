@@ -36,11 +36,7 @@ namespace ParkSmart.Application
                 return Math.Max(normalFee, GetLostTicketMinimum(session.Vehicle));
             }
 
-            var freeDuration = session.EntryTime.DayOfWeek == DayOfWeek.Friday
-                ? TimeSpan.FromHours(2)
-                : TimeSpan.FromMinutes(15);
-
-            if (duration <= freeDuration)
+            if (duration <= GetFreeDuration(session.EntryTime))
             {
                 return 0m;
             }
@@ -73,6 +69,13 @@ namespace ParkSmart.Application
                 VehicleType.Truck => 300m,
                 _ => 150m
             };
+        }
+
+        private static TimeSpan GetFreeDuration(DateTime entryTime)
+        {
+            return entryTime.DayOfWeek == DayOfWeek.Friday
+                ? TimeSpan.FromHours(2)
+                : TimeSpan.FromMinutes(15);
         }
     }
 }
