@@ -221,6 +221,35 @@ namespace ParkSmart.UnitTests
             Assert.Equal(expectedFee, result);
         }
 
+
+        [Theory]
+        [InlineData(13, 120, 0)]
+        [InlineData(13, 121, 30)]
+        [InlineData(12, 20, 10)]
+        public void Should_ApplyTwoHoursFree_When_EntryDayIsFriday(
+            int day,
+            int minutes,
+            decimal expectedFee)
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, day, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddMinutes(minutes)
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(expectedFee, result);
+        }
+
+
     }
 }
 
