@@ -191,6 +191,36 @@ namespace ParkSmart.UnitTests
         }
 
 
+        [Theory]
+        [InlineData(VehicleType.Car, 5, 150)]
+        [InlineData(VehicleType.Motorcycle, 5, 75)]
+        [InlineData(VehicleType.Truck, 5, 300)]
+        [InlineData(VehicleType.Truck, 1800, 350)]
+        public void Should_ApplyLostTicketMinimum_When_TicketIsLost(
+            VehicleType vehicle,
+            int minutes,
+            decimal expectedFee)
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 12, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddMinutes(minutes),
+                Vehicle = vehicle,
+                TicketLost = true
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(expectedFee, result);
+        }
+
     }
 }
 
