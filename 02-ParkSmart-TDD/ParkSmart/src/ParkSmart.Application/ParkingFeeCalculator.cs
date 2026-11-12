@@ -6,6 +6,7 @@ namespace ParkSmart.Application
 {
     public class ParkingFeeCalculator
     {
+
         public decimal Calculate(ParkingSession session)
         {
             if (session.ExitTime < session.EntryTime)
@@ -33,7 +34,7 @@ namespace ParkSmart.Application
 
             if (session.TicketLost)
             {
-                return Math.Max(normalFee, GetLostTicketMinimum(session.Vehicle));
+                return GetLostTicketFee(normalFee, session.Vehicle);
             }
 
             if (duration <= GetFreeDuration(session.EntryTime))
@@ -55,11 +56,35 @@ namespace ParkSmart.Application
                     _ => 30m
                 };
 
-                return Math.Min(normalFee, nightRate);
+                normalFee = Math.Min(normalFee, nightRate);
+            }
+
+            if (session.IsSubscriber)
+            {
+                var qualifiesForFreeSubscriberParking =
+                    session.EntryTime.Date == session.ExitTime.Date &&
+                    session.EntryTime.DayOfWeek >= DayOfWeek.Monday &&
+                    session.EntryTime.DayOfWeek <= DayOfWeek.Friday &&
+                    session.EntryTime.TimeOfDay >= new TimeSpan(7, 0, 0) &&
+                    session.ExitTime.TimeOfDay <= new TimeSpan(19, 0, 0);
+
+                if (qualifiesForFreeSubscriberParking)
+                {
+                    return 0m;
+                }
+
+                normalFee *= 0.5m;
             }
 
             return normalFee;
         }
+
+        private static decimal GetLostTicketFee(decimal normalFee, VehicleType vehicle)
+        {
+            var minimumFee = GetLostTicketMinimum(vehicle);
+            return Math.Max(normalFee, minimumFee);
+        }
+
 
         private static decimal GetLostTicketMinimum(VehicleType vehicle)
         {
