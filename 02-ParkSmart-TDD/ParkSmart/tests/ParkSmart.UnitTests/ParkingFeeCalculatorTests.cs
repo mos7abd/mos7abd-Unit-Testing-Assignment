@@ -250,6 +250,79 @@ namespace ParkSmart.UnitTests
         }
 
 
+        [Theory]
+        [InlineData(9, 17, 0)]
+        [InlineData(18, 20, 10)]
+        public void Should_ApplySubscriberBenefits_When_WeekdayParking(
+            int entryHour,
+            int exitHour,
+            decimal expectedFee)
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 9, entryHour, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = new DateTime(2026, 11, 9, exitHour, 0, 0),
+                IsSubscriber = true
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(expectedFee, result);
+        }
+
+        [Fact]
+        public void Should_ApplyFiftyPercentDiscount_When_SubscriberParksOnSaturday()
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 14, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddHours(3),
+                IsSubscriber = true
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(15m, result);
+        }
+
+        [Fact]
+        public void Should_ApplyLostTicketMinimumAfterDiscount_When_SubscriberLosesTicket()
+        {
+            // Arrange
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddHours(1),
+                IsSubscriber = true,
+                TicketLost = true
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            // Act
+            var result = calculator.Calculate(session);
+
+            // Assert
+            Assert.Equal(150m, result);
+        }
+
+
     }
 }
 
