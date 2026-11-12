@@ -7,11 +7,17 @@ namespace ParkSmart.Application
     public class ParkingFeeCalculator
     {
 
+
         public decimal Calculate(ParkingSession session)
         {
             if (session.ExitTime < session.EntryTime)
             {
                 throw new ArgumentException("Exit time must be after entry time.");
+            }
+
+            if (session.ChargedKwh < 0)
+            {
+                throw new ArgumentException("Charged kWh cannot be negative.");
             }
 
             var duration = session.ExitTime - session.EntryTime;
@@ -34,43 +40,50 @@ namespace ParkSmart.Application
 
             if (session.TicketLost)
             {
-                return GetLostTicketFee(normalFee, session.Vehicle);
+                normalFee = GetLostTicketFee(normalFee, session.Vehicle);
             }
-
-            if (duration <= GetFreeDuration(session.EntryTime))
+            else if (duration <= GetFreeDuration(session.EntryTime))
             {
-                return 0m;
+                normalFee = 0m;
             }
-
-            var qualifiesForNightRate =
-                session.EntryTime.TimeOfDay >= new TimeSpan(22, 0, 0) &&
-                session.ExitTime.Date == session.EntryTime.Date.AddDays(1) &&
-                session.ExitTime.TimeOfDay <= new TimeSpan(8, 0, 0);
-
-            if (qualifiesForNightRate)
+            else
             {
-                var nightRate = session.Vehicle switch
+                var qualifiesForNightRate =
+                    session.EntryTime.TimeOfDay >= new TimeSpan(22, 0, 0) &&
+                    session.ExitTime.Date == session.EntryTime.Date.AddDays(1) &&
+                    session.ExitTime.TimeOfDay <= new TimeSpan(8, 0, 0);
+
+                if (qualifiesForNightRate)
                 {
-                    VehicleType.Motorcycle => 15m,
-                    VehicleType.Truck => 75m,
-                    _ => 30m
-                };
+                    var nightRate = session.Vehicle switch
+                    {
+                        VehicleType.Motorcycle => 15m,
+                        VehicleType.Truck => 75m,
+                        _ => 30m
+                    };
 
-                normalFee = Math.Min(normalFee, nightRate);
+                    normalFee = Math.Min(normalFee, nightRate);
+                }
             }
 
-            if (session.IsSubscriber)
+            if (session.IsSubscriber && !session.TicketLost)
             {
                 if (QualifiesForSubscriberFreeParking(session))
                 {
-                    return 0m;
+                    normalFee = 0m;
                 }
-
-                normalFee *= 0.5m;
+                else
+                {
+                    normalFee *= 0.5m;
+                }
             }
 
-            return normalFee;
+            var chargingFee = session.ChargedKwh * 3.50m;
+            var totalFee = normalFee + chargingFee;
+
+            return Math.Round(totalFee, 2, MidpointRounding.AwayFromZero);
         }
+
 
         private static decimal GetLostTicketFee(decimal normalFee, VehicleType vehicle)
         {
