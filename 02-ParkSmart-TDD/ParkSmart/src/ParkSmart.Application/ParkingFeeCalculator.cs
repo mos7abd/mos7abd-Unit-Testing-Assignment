@@ -61,14 +61,7 @@ namespace ParkSmart.Application
 
             if (session.IsSubscriber)
             {
-                var qualifiesForFreeSubscriberParking =
-                    session.EntryTime.Date == session.ExitTime.Date &&
-                    session.EntryTime.DayOfWeek >= DayOfWeek.Monday &&
-                    session.EntryTime.DayOfWeek <= DayOfWeek.Friday &&
-                    session.EntryTime.TimeOfDay >= new TimeSpan(7, 0, 0) &&
-                    session.ExitTime.TimeOfDay <= new TimeSpan(19, 0, 0);
-
-                if (qualifiesForFreeSubscriberParking)
+                if (QualifiesForSubscriberFreeParking(session))
                 {
                     return 0m;
                 }
@@ -101,6 +94,15 @@ namespace ParkSmart.Application
             return entryTime.DayOfWeek == DayOfWeek.Friday
                 ? TimeSpan.FromHours(2)
                 : TimeSpan.FromMinutes(15);
+        }
+
+        private static bool QualifiesForSubscriberFreeParking(ParkingSession session)
+        {
+            return session.EntryTime.Date == session.ExitTime.Date &&
+                   session.EntryTime.DayOfWeek >= DayOfWeek.Monday &&
+                   session.EntryTime.DayOfWeek <= DayOfWeek.Friday &&
+                   session.EntryTime.TimeOfDay >= new TimeSpan(7, 0, 0) &&
+                   session.ExitTime.TimeOfDay <= new TimeSpan(19, 0, 0);
         }
     }
 }
