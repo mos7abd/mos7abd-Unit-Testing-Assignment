@@ -321,7 +321,58 @@ namespace ParkSmart.UnitTests
             // Assert
             Assert.Equal(150m, result);
         }
+        [Fact]
+        public void Should_AddChargingFee_When_VehicleUsesElectricCharging()
+        {
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddHours(2),
+                ChargedKwh = 10m
+            };
 
+            var calculator = new ParkingFeeCalculator();
+
+            var result = calculator.Calculate(session);
+
+            Assert.Equal(55m, result);
+        }
+
+        [Fact]
+        public void Should_NotDiscountChargingFee_When_SubscriberGetsFreeParking()
+        {
+            var entryTime = new DateTime(2026, 11, 9, 9, 0, 0);
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddHours(1),
+                IsSubscriber = true,
+                ChargedKwh = 4m
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            var result = calculator.Calculate(session);
+
+            Assert.Equal(14m, result);
+        }
+
+        [Fact]
+        public void Should_ThrowArgumentException_When_ChargedKwhIsNegative()
+        {
+            var entryTime = new DateTime(2026, 11, 9, 10, 0, 0);
+            var session = new ParkingSession
+            {
+                EntryTime = entryTime,
+                ExitTime = entryTime.AddHours(1),
+                ChargedKwh = -1m
+            };
+
+            var calculator = new ParkingFeeCalculator();
+
+            Assert.Throws<ArgumentException>(() => calculator.Calculate(session));
+        }
 
     }
 }
